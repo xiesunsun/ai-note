@@ -2,12 +2,33 @@
 AI闪念笔记 - FastAPI主应用
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.database import db_manager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时初始化数据库连接
+    print("🚀 正在启动AI闪念笔记后端服务...")
+    try:
+        await db_manager.init_all()
+        print("✅ 数据库连接初始化完成")
+        yield
+    except Exception as e:
+        print(f"❌ 数据库初始化失败: {e}")
+        raise
+    finally:
+        # 关闭时清理数据库连接
+        print("🔄 正在关闭数据库连接...")
+        await db_manager.close_all()
+        print("✅ 应用关闭完成")
+
 
 # 创建FastAPI应用实例
 app = FastAPI(
@@ -15,6 +36,7 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description="AI闪念笔记后端API",
     openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.DEBUG else None,
+    lifespan=lifespan,
 )
 
 # 配置CORS

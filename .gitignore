@@ -103,3 +103,6 @@ temp/
 # Task files
 tasks.json
 tasks/
+
+# Documentation tools
+.codelf/
