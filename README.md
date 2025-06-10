@@ -19,10 +19,14 @@
 - **代码规范**: ESLint + Prettier
 
 ### 后端
-- **框架**: Python FastAPI
-- **数据库**: PostgreSQL + MongoDB
-- **缓存**: Redis
-- **任务队列**: Celery
+- **框架**: FastAPI 0.104.1 + Python 3.11.9
+- **ORM**: SQLAlchemy 2.0.23 (PostgreSQL)
+- **文档数据库**: Motor 3.3.2 (MongoDB)
+- **缓存**: Redis 5.0.1 + 异步客户端
+- **任务队列**: Celery 5.3.4
+- **数据库迁移**: Alembic 1.12.1
+- **测试框架**: pytest 7.4.3 + pytest-asyncio
+- **包管理**: uv (现代Python包管理器)
 - **AI集成**: OpenAI GPT / Anthropic Claude
 
 ### 基础设施
@@ -32,9 +36,13 @@
 ## 🚀 快速开始
 
 ### 环境要求
-- Node.js 18+
-- Python 3.11+
-- Docker & Docker Compose
+- **Node.js 18+** (前端开发)
+- **Python 3.11.9** (推荐使用pyenv管理)
+- **uv** (Python包管理器)
+- **Docker & Docker Compose** (容器化部署)
+- **PostgreSQL 13+** (用户数据)
+- **MongoDB 5.0+** (笔记数据)
+- **Redis 6.0+** (缓存和会话)
 
 ### 开发环境设置
 
@@ -58,12 +66,18 @@ npm start
 
 4. **后端开发**
 ```bash
+# 激活项目虚拟环境 (使用uv管理)
+source .venv/bin/activate
+
+# 安装依赖
 cd backend
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# 或 venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+uv pip install -r requirements.txt
+
+# 运行数据库迁移
+alembic upgrade head
+
+# 启动开发服务器
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 生产环境部署
@@ -130,7 +144,21 @@ npm test
 ### 后端测试
 ```bash
 cd backend
-pytest
+source ../.venv/bin/activate
+
+# 运行所有测试
+python run_tests.py
+
+# 运行特定类型的测试
+python run_tests.py --type cache      # 缓存服务测试
+python run_tests.py --type services   # 服务层测试
+python run_tests.py --type models     # 模型测试
+
+# 运行测试并生成覆盖率报告
+python run_tests.py --coverage
+
+# 使用pytest直接运行
+pytest tests/ -v
 ```
 
 ## 📝 API文档
@@ -154,8 +182,9 @@ pytest
 ## 🔗 相关链接
 
 - [项目需求文档](scripts/PRD.txt)
-- [开发任务列表](.taskmaster/tasks/)
-- [技术文档](docs/)
+- [项目结构文档](docs/project_structure.md)
+- [测试报告](docs/test_report.md)
+- [任务工作记录](docs/task_002_work_record.md)
 
 ## 📞 联系方式
 
