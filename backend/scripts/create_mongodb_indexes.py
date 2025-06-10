@@ -73,14 +73,48 @@ async def create_notes_indexes():
         # 10. 复习计划索引 - 用于艾宾浩斯记忆系统
         await notes_collection.create_index([("review_schedule", ASCENDING)])
         print("✅ 创建review_schedule索引")
-        
+
+        # 11. 版本索引 - 用于版本管理
+        await notes_collection.create_index([("version", ASCENDING)])
+        print("✅ 创建version索引")
+
+        # 创建笔记历史集合的索引
+        print("\n📝 创建笔记历史集合索引...")
+        history_collection = db.note_history
+
+        # 1. 笔记ID索引 - 用于查询特定笔记的历史
+        await history_collection.create_index([("note_id", ASCENDING)])
+        print("✅ 创建note_id索引")
+
+        # 2. 版本索引 - 用于查询特定版本
+        await history_collection.create_index([("version", ASCENDING)])
+        print("✅ 创建version索引")
+
+        # 3. 复合索引：笔记ID + 版本 - 用于查询特定笔记的特定版本
+        await history_collection.create_index([
+            ("note_id", ASCENDING),
+            ("version", DESCENDING)
+        ])
+        print("✅ 创建note_id + version复合索引")
+
+        # 4. 创建时间索引 - 用于按时间排序历史记录
+        await history_collection.create_index([("created_at", DESCENDING)])
+        print("✅ 创建历史记录created_at索引")
+
         # 列出所有索引
-        indexes = await notes_collection.list_indexes().to_list(length=None)
+        notes_indexes = await notes_collection.list_indexes().to_list(length=None)
+        history_indexes = await history_collection.list_indexes().to_list(length=None)
+
         print(f"\n📋 notes集合当前索引列表:")
-        for idx in indexes:
+        for idx in notes_indexes:
             print(f"  - {idx['name']}: {idx.get('key', {})}")
-        
-        print(f"\n🎉 MongoDB索引创建完成！共创建了 {len(indexes)} 个索引")
+
+        print(f"\n📋 note_history集合当前索引列表:")
+        for idx in history_indexes:
+            print(f"  - {idx['name']}: {idx.get('key', {})}")
+
+        total_indexes = len(notes_indexes) + len(history_indexes)
+        print(f"\n🎉 MongoDB索引创建完成！共创建了 {total_indexes} 个索引")
         
     except Exception as e:
         print(f"❌ 创建MongoDB索引失败: {e}")

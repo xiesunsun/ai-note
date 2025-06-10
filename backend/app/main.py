@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.database import db_manager
+from app.middleware.rate_limit_middleware import RateLimitMiddleware
+from app.services.cache_service import CacheService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,6 +49,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 添加限流中间件
+from app.services.cache_service import get_cache_service
+cache_service = get_cache_service()
+app.add_middleware(RateLimitMiddleware, cache_service=cache_service)
 
 # 注册API路由
 app.include_router(api_router, prefix=settings.API_V1_STR)
