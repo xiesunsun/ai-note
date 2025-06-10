@@ -99,7 +99,15 @@ dmypy.json
 # 临时文件
 tmp/
 temp/
+test_basic.py
+test_cache_logic.py
+test_user_logic.py
+test_report.md
+*_packages.txt
 
 # Task files
 tasks.json
 tasks/
+
+# Documentation tools
+.codelf/

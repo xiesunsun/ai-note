@@ -28,13 +28,21 @@ class Settings(BaseSettings):
     # AI服务配置
     OPENAI_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    PERPLEXITY_API_KEY: Optional[str] = None
+    GOOGLE_API_KEY: Optional[str] = None
+    MISTRAL_API_KEY: Optional[str] = None
+    XAI_API_KEY: Optional[str] = None
+    AZURE_OPENAI_API_KEY: Optional[str] = None
+    OLLAMA_API_KEY: Optional[str] = None
 
     # CORS配置
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "ignore"  # 忽略额外字段
+    }
 
 
 # 创建全局设置实例
