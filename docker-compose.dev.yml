@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库 - 开发环境
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: ai-note-postgres-dev
+    environment:
+      - POSTGRES_DB=ai_note_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=dev_password_123
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ai-note-dev-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_note_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB数据库 - 开发环境
+  mongo-dev:
+    image: mongo:7-jammy
+    container_name: ai-note-mongo-dev
+    environment:
+      - MONGO_INITDB_DATABASE=ai_note_dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_dev_data:/data/db
+      - ./backend/scripts/init_mongo.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - ai-note-dev-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/ai_note_dev --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis缓存 - 开发环境
+  redis-dev:
+    image: redis:7-alpine
+    container_name: ai-note-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+      - ./backend/scripts/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - ai-note-dev-network
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 数据库管理工具 - pgAdmin (可选)
+  pgadmin-dev:
+    image: dpage/pgadmin4:latest
+    container_name: ai-note-pgadmin-dev
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@ai-note.dev
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    networks:
+      - ai-note-dev-network
+    restart: unless-stopped
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+
+  # MongoDB管理工具 - Mongo Express (可选)
+  mongo-express-dev:
+    image: mongo-express:latest
+    container_name: ai-note-mongo-express-dev
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo-dev
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    ports:
+      - "8081:8081"
+    networks:
+      - ai-note-dev-network
+    restart: unless-stopped
+    depends_on:
+      mongo-dev:
+        condition: service_healthy
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  mongo_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  pgadmin_dev_data:
+    driver: local
+
+networks:
+  ai-note-dev-network:
+    driver: bridge
+    name: ai-note-dev-network

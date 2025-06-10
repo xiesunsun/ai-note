@@ -20,13 +20,14 @@ class UserService:
     def __init__(self, cache_service: CacheService = None):
         self.cache_service = cache_service or create_cache_service()
 
-    async def create_user(self, session: AsyncSession, user_data: UserCreate) -> User:
+    async def create_user(self, session: AsyncSession, user_data: UserCreate, password_hash: str) -> User:
         """创建新用户"""
         try:
             # 创建用户实例
             user = User(
                 name=user_data.name,
                 email=user_data.email,
+                password_hash=password_hash,
                 preferences=user_data.preferences or {}
             )
 

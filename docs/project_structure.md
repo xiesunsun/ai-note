@@ -1,8 +1,11 @@
-# AI笔记项目结构文档
+# AI闪念笔记 - 项目结构
 
 ## 项目概述
+AI闪念笔记是一个现代化的笔记管理系统，采用前后端分离架构，支持智能笔记管理、知识图谱构建和AI辅助功能。
 
-AI闪念笔记是一个现代化的全栈Web应用，采用前后端分离架构，支持智能笔记管理、AI增强和多数据库存储。
+**当前开发状态**: 已完成核心笔记管理API和用户认证系统
+**最后更新**: 2025年6月10日
+**完成任务**: Task 003 (用户认证系统), Task 004 (核心笔记管理API)
 
 ## 技术栈
 
@@ -41,7 +44,8 @@ ai-note/
 ├── docs/                    # 项目文档
 │   ├── project_structure.md # 项目结构文档 (本文件)
 │   ├── test_report.md       # 测试报告
-│   └── task_002_work_record.md # 任务二工作记录
+│   ├── task_003_summary.md  # 任务三总结 (用户认证系统)
+│   └── task_004_summary.md  # 任务四总结 (核心笔记管理API)
 │
 ├── scripts/                 # 项目脚本和文档
 │   └── PRD.txt             # 产品需求文档
@@ -74,15 +78,23 @@ ai-note/
     │   ├── schemas/        # Pydantic数据模式
     │   │   ├── __init__.py
     │   │   ├── user.py     # 用户API模式
-    │   │   ├── note.py     # 笔记API模式
+    │   │   ├── note.py     # 笔记API模式 (版本历史、Markdown验证)
+    │   │   ├── auth.py     # 认证API模式
     │   │   └── knowledge.py # 知识关联API模式
     │   │
     │   ├── services/       # 业务逻辑服务层 ⭐ 核心实现
     │   │   ├── __init__.py
     │   │   ├── cache_service.py    # Redis缓存服务
     │   │   ├── user_service.py     # 用户CRUD服务
-    │   │   ├── note_service.py     # 笔记CRUD服务
+    │   │   ├── note_service.py     # 笔记CRUD服务 (版本历史、搜索)
+    │   │   ├── auth_service.py     # 认证服务 (JWT、密码哈希)
+    │   │   ├── markdown_service.py # Markdown解析验证服务
     │   │   └── knowledge_service.py # 知识关联服务
+    │   │
+    │   ├── middleware/     # 中间件
+    │   │   ├── __init__.py
+    │   │   ├── auth_middleware.py  # JWT认证中间件
+    │   │   └── rate_limit_middleware.py # API限流中间件
     │   │
     │   └── api/            # API路由
     │       ├── __init__.py
@@ -112,7 +124,10 @@ ai-note/
     │
     ├── scripts/            # 工具脚本
     │   ├── __init__.py
-    │   └── create_mongodb_indexes.py # MongoDB索引创建
+    │   ├── create_mongodb_indexes.py # MongoDB索引创建 (17个索引)
+    │   ├── init_mongo.js   # MongoDB初始化脚本
+    │   ├── init_postgres.sql # PostgreSQL初始化脚本
+    │   └── redis.conf      # Redis配置文件
     │
     ├── requirements.txt    # Python依赖
     ├── pytest.ini         # pytest配置
@@ -132,7 +147,9 @@ ai-note/
 ### 服务层 (services/)
 - **CacheService**: Redis缓存服务，支持会话管理、数据缓存
 - **UserService**: 用户CRUD服务，集成缓存功能
-- **NoteService**: 笔记CRUD服务，支持全文搜索
+- **NoteService**: 笔记CRUD服务，支持全文搜索、版本历史、Markdown解析
+- **AuthService**: 认证服务，JWT管理、密码哈希、登录限制
+- **MarkdownService**: Markdown解析验证服务，XSS防护、HTML转换
 - **KnowledgeService**: 知识关联服务
 
 ### 模型层 (models/ & schemas/)

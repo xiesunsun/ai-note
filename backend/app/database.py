@@ -135,7 +135,7 @@ class DatabaseManager:
     
     def get_mongo_db(self):
         """获取MongoDB数据库引用"""
-        if not self.mongo_db:
+        if self.mongo_db is None:
             raise RuntimeError("MongoDB未初始化")
         return self.mongo_db
     
@@ -151,9 +151,9 @@ db_manager = DatabaseManager()
 
 
 # 依赖注入函数
-async def get_postgres_session() -> AsyncSession:
+async def get_postgres_session():
     """FastAPI依赖：获取PostgreSQL会话"""
-    async with db_manager.get_postgres_session() as session:
+    async with db_manager.async_session_maker() as session:
         try:
             yield session
         finally:
